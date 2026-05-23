@@ -986,7 +986,11 @@ function ReportsScreen({ ctx }) {
       </div>
 
       {/* Despesas + Lucro líquido */}
-      <ExpensesSection ctx={ctx} period={period} grossProfit={filtered.reduce((s,v) => s+v.profit, 0)}/>
+      <ExpensesSection
+        ctx={ctx}
+        period={period}
+        grossProfit={filtered.reduce((s,v) => s+v.profit, 0)}
+        isLastSection={lowMargin.length === 0}/>
 
       {/* Low margin alert — only shows if there are products below the threshold */}
       {lowMargin.length > 0 && (<>
@@ -1017,7 +1021,7 @@ function ReportsScreen({ ctx }) {
   );
 }
 
-function ExpensesSection({ ctx, period, grossProfit }) {
+function ExpensesSection({ ctx, period, grossProfit, isLastSection = false }) {
   const { expenses, addExpense, removeExpense } = ctx;
   // Convert each expense to an amount for the current period.
   // 'mensal' = full amount if period is 'mes', proportional for 'semana'/'hoje'.
@@ -1062,7 +1066,7 @@ function ExpensesSection({ ctx, period, grossProfit }) {
       <window.SectionHead
         title="Despesas"
         action={{ label: '+ Adicionar', onClick: handleAdd }}/>
-      <div style={{ padding: '0 20px' }}>
+      <div style={{ padding: `0 20px ${isLastSection ? 130 : 0}px` }}>
         <window.Card style={{ padding: 14 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>

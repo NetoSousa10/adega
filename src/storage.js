@@ -17,6 +17,14 @@ const SETTINGS_MIGRATIONS = [
       return settings;
     },
   },
+  // v2 -> v3: default store name changed from "Adega Pinguim" to "Adega".
+  {
+    to: 3,
+    apply: (settings) => {
+      if (settings.storeName === 'Adega Pinguim') settings.storeName = 'Adega';
+      return settings;
+    },
+  },
 ];
 const CURRENT_SETTINGS_VERSION = SETTINGS_MIGRATIONS.length
   ? SETTINGS_MIGRATIONS[SETTINGS_MIGRATIONS.length - 1].to
@@ -33,7 +41,7 @@ function migrateSettings(saved) {
 }
 
 export const DEFAULT_SETTINGS = {
-  storeName: 'Adega Pinguim',
+  storeName: 'Adega',
   ownerName: '',
   backupReminderDays: 7,
   lastBackupAt: null,
@@ -152,7 +160,7 @@ export function buildBackupBlob(state) {
 export function backupFileName() {
   const d = new Date();
   const pad = (n) => n.toString().padStart(2, '0');
-  return `adega-pinguim-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.json`;
+  return `adega-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.json`;
 }
 
 // Triggers the OS share sheet with the backup as a JSON file attachment.
@@ -168,7 +176,7 @@ export async function shareBackup(state) {
       if (navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: 'Backup Adega Pinguim',
+          title: 'Backup Adega',
           text: 'Backup dos dados da loja',
         });
         return { method: 'share', ok: true };
@@ -212,7 +220,7 @@ export async function pickAndParseBackup() {
 
 export function parseBackup(text) {
   const data = JSON.parse(text);
-  if (data.app !== 'adega-pinguim') throw new Error('Arquivo não é um backup do Adega Pinguim');
+  if (data.app !== 'adega-pinguim') throw new Error('Arquivo não é um backup do Adega');
   if (typeof data.schema !== 'number') throw new Error('Backup sem versão de schema');
   return {
     schema: SCHEMA_VERSION,

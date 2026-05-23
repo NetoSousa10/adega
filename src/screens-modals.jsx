@@ -699,7 +699,7 @@ function SettingsScreen({ onClose, ctx }) {
   const groups = [
     { title: 'Loja', rows: [
       { label: 'Nome da loja', value: settings.storeName,
-        onClick: () => editText('Nome da loja', settings.storeName, (v) => setSetting('storeName', v || 'Adega Pinguim')) },
+        onClick: () => editText('Nome da loja', settings.storeName, (v) => setSetting('storeName', v || 'Adega')) },
       { label: 'Seu nome', value: settings.ownerName || '—',
         onClick: () => editText('Seu nome (aparece no cumprimento)', settings.ownerName, (v) => setSetting('ownerName', v)) },
     ]},
@@ -782,7 +782,7 @@ function SettingsScreen({ onClose, ctx }) {
         ))}
 
         <div style={{ marginTop: 28, textAlign: 'center', fontFamily: F2, fontSize: 12, color: T2.ink3 }}>
-          Adega Pinguim v1.0
+          Adega v1.0
         </div>
       </div>
     </window.FullPage>

@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
-        name: 'Adega Pinguim',
+        name: 'Adega',
         short_name: 'Adega',
         description: 'Controle de vendas e lucro para sua adega',
         theme_color: '#0E4C2F',
