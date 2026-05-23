@@ -13,6 +13,28 @@ import {
   clearState, EMPTY_STATE,
 } from './storage.js';
 
+// Intercept the Android/browser back button so it closes the topmost modal
+// instead of leaving the PWA. Each modal that uses this pushes its own history
+// entry on open and pops it on close.
+function useBackClose(isOpen, close) {
+  const closeRef = React.useRef(close);
+  closeRef.current = close;
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    let viaBack = false;
+    window.history.pushState({ __adegaModal: true }, '');
+    const onPop = () => { viaBack = true; closeRef.current(); };
+    window.addEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      if (!viaBack && window.history.state?.__adegaModal) {
+        try { window.history.back(); } catch (_) { /* noop */ }
+      }
+    };
+  }, [isOpen]);
+}
+
 function App({ initialState }) {
   const TT = window.T;
   const [tab, setTab] = React.useState('inicio');
@@ -32,6 +54,15 @@ function App({ initialState }) {
   const [openPageId, setOpenPageId] = React.useState(null); // 'settings' | 'categories'
   const [detailSale, setDetailSale] = React.useState(null);
   const [successSale, setSuccessSale] = React.useState(null);
+
+  // Hook back-button into every modal/sheet so it closes instead of exiting PWA.
+  useBackClose(editingProduct !== undefined, () => setEditingProduct(undefined));
+  useBackClose(checkoutOpen, () => setCheckoutOpen(false));
+  useBackClose(openPageId === 'categories', () => setOpenPageId('settings'));
+  useBackClose(openPageId === 'settings', () => setOpenPageId(null));
+  useBackClose(!!detailSale, () => setDetailSale(null));
+  useBackClose(!!successSale, () => setSuccessSale(null));
+  useBackClose(cashCloseOpen, () => setCashCloseOpen(false));
 
   // Persist on changes (debounced).
   const saveTimer = React.useRef(null);

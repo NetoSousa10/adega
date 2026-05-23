@@ -20,6 +20,25 @@ export function DialogHost() {
     return () => { dialogResolverHook = null; };
   }, []);
 
+  // Back button closes the dialog (treats as cancel).
+  React.useEffect(() => {
+    if (!d) return;
+    let viaBack = false;
+    window.history.pushState({ __adegaDialog: true }, '');
+    const onPop = () => {
+      viaBack = true;
+      d.resolve(d.type === 'confirm' ? false : null);
+      setD(null); setValue('');
+    };
+    window.addEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      if (!viaBack && window.history.state?.__adegaDialog) {
+        try { window.history.back(); } catch (_) { /* noop */ }
+      }
+    };
+  }, [d]);
+
   if (!d) return null;
   const T = window.T;
   const FONT = "'Manrope', system-ui, sans-serif";
