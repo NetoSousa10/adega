@@ -14,8 +14,14 @@ import {
 } from './storage.js';
 
 // Intercept the Android/browser back button so it closes the topmost modal
-// instead of leaving the PWA. Each modal that uses this pushes its own history
-// entry on open and pops it on close.
+// instead of leaving the PWA. Each modal pushes its own history entry on open;
+// closing via X programmatically pops it.
+//
+// A module-level counter suppresses popstate events triggered by our own
+// programmatic history.back() calls (e.g. when transitioning between sibling
+// modals controlled by the same state). This prevents the cleanup of one
+// hook from accidentally closing the modal that just opened.
+let __suppressNextPopstate = 0;
 function useBackClose(isOpen, close) {
   const closeRef = React.useRef(close);
   closeRef.current = close;
@@ -24,12 +30,26 @@ function useBackClose(isOpen, close) {
     if (!isOpen) return;
     let viaBack = false;
     window.history.pushState({ __adegaModal: true }, '');
-    const onPop = () => { viaBack = true; closeRef.current(); };
+    const onPop = () => {
+      if (__suppressNextPopstate > 0) {
+        __suppressNextPopstate--;
+        return;
+      }
+      viaBack = true;
+      closeRef.current();
+    };
     window.addEventListener('popstate', onPop);
     return () => {
       window.removeEventListener('popstate', onPop);
       if (!viaBack && window.history.state?.__adegaModal) {
+        __suppressNextPopstate++;
         try { window.history.back(); } catch (_) { /* noop */ }
+        // Safety: if no listener consumed the suppression, decrement after
+        // the popstate macrotask runs so a stale count doesn't eat a real
+        // user back press later.
+        setTimeout(() => {
+          if (__suppressNextPopstate > 0) __suppressNextPopstate--;
+        }, 50);
       }
     };
   }, [isOpen]);
@@ -55,11 +75,11 @@ function App({ initialState }) {
   const [detailSale, setDetailSale] = React.useState(null);
   const [successSale, setSuccessSale] = React.useState(null);
 
-  // Hook back-button into modals/sheets so it closes instead of exiting PWA.
-  // Settings/Categories share openPageId — nesting them with useBackClose causes
-  // history thrashing on transition, so they rely on the ← header button instead.
+  // Hook back-button into every modal/sheet so it closes instead of exiting PWA.
   useBackClose(editingProduct !== undefined, () => setEditingProduct(undefined));
   useBackClose(checkoutOpen, () => setCheckoutOpen(false));
+  useBackClose(openPageId === 'categories', () => setOpenPageId('settings'));
+  useBackClose(openPageId === 'settings', () => setOpenPageId(null));
   useBackClose(!!detailSale, () => setDetailSale(null));
   useBackClose(!!successSale, () => setSuccessSale(null));
   useBackClose(cashCloseOpen, () => setCashCloseOpen(false));
