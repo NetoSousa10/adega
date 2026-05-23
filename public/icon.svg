@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#0E4C2F"/>
+  <rect x="38" y="38" width="436" height="436" rx="84" fill="none" stroke="#1F7A4D" stroke-width="3" opacity="0.4"/>
+  <g transform="translate(256 264)">
+    <ellipse cx="0" cy="86" rx="92" ry="22" fill="#0A3520"/>
+    <path d="M -76 -110 L 76 -110 L 64 70 Q 60 96 0 96 Q -60 96 -64 70 Z"
+          fill="#9DE3BF" stroke="#E2F1E8" stroke-width="4"/>
+    <path d="M -68 -90 L 68 -90 L 60 -40 L -60 -40 Z" fill="#E2F1E8" opacity="0.35"/>
+    <circle cx="-18" cy="-12" r="6" fill="#fff" opacity="0.55"/>
+    <circle cx="14" cy="22" r="4.5" fill="#fff" opacity="0.45"/>
+    <circle cx="-26" cy="46" r="3.5" fill="#fff" opacity="0.4"/>
+  </g>
+  <text x="256" y="446" text-anchor="middle"
+        font-family="-apple-system, system-ui, sans-serif"
+        font-size="56" font-weight="800" fill="#fff" letter-spacing="-2">AP</text>
+</svg>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0E4C2F">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link rel="apple-touch-icon" href="/icon.svg">
+<title>Adega Pinguim · Controle de Lucro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; width: 100%;
+    font-family: 'Manrope', -apple-system, system-ui, sans-serif;
+    background: #0B0C0E; color: #1A1D1F; -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility; overscroll-behavior: none;
+  }
+  body { overflow: hidden; }
+  button { font-family: inherit; }
+  ::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  * { scrollbar-width: none; -ms-overflow-style: none; }
+  @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes slideUp { from { transform: translateY(100%) } to { transform: translateY(0) } }
+  @keyframes slideInRight { from { transform: translateX(100%) } to { transform: translateX(0) } }
+
+  #shell {
+    position: fixed; inset: 0;
+    background: radial-gradient(circle at 50% 30%, #2A2D31 0%, #16181A 60%, #0B0C0E 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #stage {
+    position: relative;
+    width: 100%; height: 100%;
+    background: #F5F3EE;
+    overflow: hidden;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  #root { position: absolute; inset: 0; }
+  @media (min-width: 600px) {
+    #stage {
+      width: 420px; height: min(900px, 100vh - 24px);
+      border-radius: 36px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04);
+      padding-top: 18px;
+      padding-bottom: 0;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="shell"><div id="stage"><div id="root"></div></div></div>
+<script type="module" src="/src/main.jsx"></script>
+</body>
+</html>
