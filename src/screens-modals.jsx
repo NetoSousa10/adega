@@ -8,12 +8,21 @@ const { T: T2, FONT: F2 } = window;
 function ProductForm({ product, onSave, onClose, onDelete, onRestock, onAdjust, stockMovements }) {
   const empty = { name: '', cat: 'cerv', brand: '', volume: '', cost: 0, price: 0, stock: 0, sku: '', active: true };
   const [p, setP] = React.useState(product ? { ...product, active: product.active !== false } : empty);
+  const moneyToInput = (n) => n === 0 || n == null ? '' : String(n).replace('.', ',');
+  const parseMoneyInput = (v) => {
+    const n = parseFloat(String(v).replace(',', '.'));
+    return Number.isFinite(n) ? n : 0;
+  };
+  const [costText, setCostText] = React.useState(() => moneyToInput(product?.cost ?? empty.cost));
+  const [priceText, setPriceText] = React.useState(() => moneyToInput(product?.price ?? empty.price));
 
   // Sync stock/cost/price when product is updated externally (e.g. restock).
   // We don't sync user-editable fields like name/brand to avoid clobbering unsaved edits.
   React.useEffect(() => {
     if (!product) return;
     setP(prev => ({ ...prev, stock: product.stock, cost: product.cost, price: product.price }));
+    setCostText(moneyToInput(product.cost));
+    setPriceText(moneyToInput(product.price));
   }, [product?.stock, product?.cost, product?.price]);
 
   const lucroUn = p.price - p.cost;
@@ -105,14 +114,20 @@ function ProductForm({ product, onSave, onClose, onDelete, onRestock, onAdjust, 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <window.Field label="Preço de compra" suffix="R$">
               <window.TextInput
-                value={p.cost === 0 ? '' : String(p.cost).replace('.', ',')}
-                onChange={(v) => set('cost', parseFloat(v.replace(',', '.')) || 0)}
+                value={costText}
+                onChange={(v) => {
+                  setCostText(v);
+                  set('cost', parseMoneyInput(v));
+                }}
                 placeholder="0,00" inputMode="decimal"/>
             </window.Field>
             <window.Field label="Preço de venda" suffix="R$">
               <window.TextInput
-                value={p.price === 0 ? '' : String(p.price).replace('.', ',')}
-                onChange={(v) => set('price', parseFloat(v.replace(',', '.')) || 0)}
+                value={priceText}
+                onChange={(v) => {
+                  setPriceText(v);
+                  set('price', parseMoneyInput(v));
+                }}
                 placeholder="0,00" inputMode="decimal"/>
             </window.Field>
           </div>
