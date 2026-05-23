@@ -357,8 +357,8 @@ function ProductsScreen({ ctx }) {
     (cat === 'all' || p.cat === cat) &&
     (q === '' ||
       p.name.toLowerCase().includes(q.toLowerCase()) ||
-      p.brand.toLowerCase().includes(q.toLowerCase()) ||
-      window.CAT_LABEL[p.cat].toLowerCase().includes(q.toLowerCase()))
+      (p.brand || '').toLowerCase().includes(q.toLowerCase()) ||
+      (window.CAT_LABEL[p.cat] || '').toLowerCase().includes(q.toLowerCase()))
   );
 
   return (
@@ -446,7 +446,7 @@ function ProductRow({ p, onClick, settings }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginTop: 2 }}>
           <div style={{ fontFamily: FONT, fontSize: 12, color: T.ink3, fontWeight: 500 }}>
-            {window.CAT_LABEL[p.cat]} · {p.volume}
+            {window.CAT_LABEL[p.cat] || 'Sem categoria'} · {p.volume}
           </div>
           <div style={{ fontFamily: FONT, fontSize: 11.5, color: T.ink3 }}>
             custo {window.brl(p.cost)}
@@ -494,7 +494,7 @@ function SellScreen({ ctx }) {
   const filtered = products.filter(p =>
     q === '' ||
     p.name.toLowerCase().includes(q.toLowerCase()) ||
-    p.brand.toLowerCase().includes(q.toLowerCase())
+    (p.brand || '').toLowerCase().includes(q.toLowerCase())
   );
 
   const addToCart = (p) => {
@@ -922,6 +922,7 @@ function ReportsScreen({ ctx }) {
           {topVendidos.map((agg, idx) => {
             const p = products.find(pp => pp.id === agg.pid);
             const maxQty = topVendidos[0].qty;
+            const productName = p?.name || agg.name || 'Produto removido';
             return (
               <div key={agg.pid} style={{
                 padding: '14px 14px',
@@ -936,7 +937,7 @@ function ReportsScreen({ ctx }) {
                   <window.ProductAvatar product={p} size={36} radius={10}/>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13.5, color: T.ink,
-                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.005em' }}>{p.name}</div>
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.005em' }}>{productName}</div>
                     <div style={{ fontFamily: FONT, fontSize: 11.5, color: T.ink3, marginTop: 2 }}>{window.brl(agg.rev)}</div>
                   </div>
                   <window.Num size={14} weight={700}>{agg.qty} un.</window.Num>
@@ -957,6 +958,8 @@ function ReportsScreen({ ctx }) {
           {topLucrativos.map((agg, idx) => {
             const p = products.find(pp => pp.id === agg.pid);
             const maxP = topLucrativos[0].profit;
+            const productName = p?.name || agg.name || 'Produto removido';
+            const marginLabel = p ? window.pct(window.margin(p)) : window.pct(agg.rev ? (agg.profit / agg.rev) * 100 : 0);
             return (
               <div key={agg.pid} style={{
                 padding: '14px 14px',
@@ -971,8 +974,8 @@ function ReportsScreen({ ctx }) {
                   <window.ProductAvatar product={p} size={36} radius={10}/>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13.5, color: T.ink,
-                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.005em' }}>{p.name}</div>
-                    <div style={{ fontFamily: FONT, fontSize: 11.5, color: T.ink3, marginTop: 2 }}>margem {window.pct(window.margin(p))}</div>
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.005em' }}>{productName}</div>
+                    <div style={{ fontFamily: FONT, fontSize: 11.5, color: T.ink3, marginTop: 2 }}>margem {marginLabel}</div>
                   </div>
                   <window.Num size={14} weight={700} color={T.primary}>{window.brl(agg.profit)}</window.Num>
                 </div>

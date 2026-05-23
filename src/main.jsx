@@ -344,7 +344,11 @@ function App({ initialState }) {
     setEditingProduct(undefined);
   };
   const deleteProduct = () => {
-    setProducts(prev => prev.filter(x => x.id !== editingProduct.id));
+    const productId = editingProduct?.id;
+    if (!productId) return;
+    setProducts(prev => prev.filter(x => x.id !== productId));
+    setCart(prev => prev.filter(x => x.pid !== productId));
+    setStockMovements(prev => prev.filter(x => x.pid !== productId));
     setEditingProduct(undefined);
   };
 
