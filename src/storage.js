@@ -5,6 +5,33 @@ const SNAPSHOTS_KEY = 'adega-pinguim:snapshots:v1';
 const MAX_SNAPSHOTS = 5;
 const SCHEMA_VERSION = 1;
 
+// Settings migrations — runs in order on every load. Each migration bumps the
+// settingsVersion. Add a new entry when you change defaults that should reach
+// existing installs without forcing them to reset.
+const SETTINGS_MIGRATIONS = [
+  // v1 → v2 — backup reminder default went from 3 → 7 days.
+  {
+    to: 2,
+    apply: (settings) => {
+      if (settings.backupReminderDays === 3) settings.backupReminderDays = 7;
+      return settings;
+    },
+  },
+];
+const CURRENT_SETTINGS_VERSION = SETTINGS_MIGRATIONS.length
+  ? SETTINGS_MIGRATIONS[SETTINGS_MIGRATIONS.length - 1].to
+  : 1;
+
+function migrateSettings(saved) {
+  let s = { ...saved };
+  const from = s.settingsVersion ?? 1;
+  for (const m of SETTINGS_MIGRATIONS) {
+    if (from < m.to) s = m.apply(s);
+  }
+  s.settingsVersion = CURRENT_SETTINGS_VERSION;
+  return s;
+}
+
 export const DEFAULT_SETTINGS = {
   storeName: 'Adega Pinguim',
   ownerName: '',
@@ -12,6 +39,7 @@ export const DEFAULT_SETTINGS = {
   lastBackupAt: null,
   lowStockAlert: 6,
   lowMarginAlert: 30,
+  settingsVersion: CURRENT_SETTINGS_VERSION,
 };
 
 export const EMPTY_STATE = {
@@ -40,7 +68,7 @@ export async function loadState() {
       stockMovements: raw.stockMovements ?? [],
       closures: raw.closures ?? [],
       categories: raw.categories ?? null,
-      settings: { ...DEFAULT_SETTINGS, ...(raw.settings ?? {}) },
+      settings: migrateSettings({ ...DEFAULT_SETTINGS, ...(raw.settings ?? {}) }),
     };
   } catch (e) {
     console.error('loadState failed', e);
@@ -195,6 +223,6 @@ export function parseBackup(text) {
     stockMovements: Array.isArray(data.stockMovements) ? data.stockMovements : [],
     closures: Array.isArray(data.closures) ? data.closures : [],
     categories: Array.isArray(data.categories) ? data.categories : null,
-    settings: { ...DEFAULT_SETTINGS, ...(data.settings ?? {}) },
+    settings: migrateSettings({ ...DEFAULT_SETTINGS, ...(data.settings ?? {}) }),
   };
 }
