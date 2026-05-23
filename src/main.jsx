@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { registerSW } from 'virtual:pwa-register';
 
 import './data.jsx';
 import './icons.jsx';
@@ -12,6 +13,14 @@ import {
   loadState, saveState, pushSnapshot, shareBackup, pickAndParseBackup,
   clearState, EMPTY_STATE,
 } from './storage.js';
+
+registerSW({
+  immediate: true,
+  onRegisteredSW(_swUrl, registration) {
+    if (!registration) return;
+    setInterval(() => registration.update(), 5 * 60 * 1000);
+  },
+});
 
 // Back-button handling: a single global popstate listener routes each event
 // to the top of a stack of close handlers. Each useBackClose pushes onto the
