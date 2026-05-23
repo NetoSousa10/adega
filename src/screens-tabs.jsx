@@ -44,6 +44,7 @@ function OnboardEmpty({ Icon, title, subtitle, ctaLabel, onCta }) {
 function DashboardScreen({ ctx }) {
   const { sales, products } = ctx;
   const [period, setPeriod] = React.useState('hoje');
+  const [scrolled, setScrolled] = React.useState(false);
 
   if (products.length === 0) {
     return (
@@ -108,8 +109,6 @@ function DashboardScreen({ ctx }) {
     });
     return v;
   });
-
-  const [scrolled, setScrolled] = React.useState(false);
 
   return (
     <div onScroll={(e) => setScrolled(e.target.scrollTop > 4)} style={{
