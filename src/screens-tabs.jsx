@@ -408,7 +408,7 @@ function ProductsScreen({ ctx }) {
                   ctaLabel="Cadastrar produto"
                   onCta={() => ctx.openProduct(null)}/>
               : <window.EmptyState Icon={window.IcBox} title="Nenhum produto encontrado" subtitle="Tente ajustar a busca ou os filtros."/>)
-          : filtered.map(p => <ProductRow key={p.id} p={p} onClick={() => ctx.openProduct(p)}/>)}
+          : filtered.map(p => <ProductRow key={p.id} p={p} settings={ctx.settings} onClick={() => ctx.openProduct(p)}/>)}
       </div>
 
       {/* FAB */}
@@ -425,10 +425,10 @@ function ProductsScreen({ ctx }) {
   );
 }
 
-function ProductRow({ p, onClick }) {
+function ProductRow({ p, onClick, settings }) {
   const m = window.margin(p);
-  const lowMargin = m < 30;
-  const lowStock = p.stock <= 6;
+  const lowMargin = m < (settings?.lowMarginAlert ?? 30);
+  const lowStock = p.stock <= (settings?.lowStockAlert ?? 6);
 
   return (
     <div onClick={onClick} style={{
@@ -869,7 +869,11 @@ function ReportsScreen({ ctx }) {
   const topVendidos = [...aggArr].sort((a,b) => b.qty - a.qty).slice(0, 4);
   const topLucrativos = [...aggArr].sort((a,b) => b.profit - a.profit).slice(0, 4);
 
-  const lowMargin = [...products].sort((a,b) => window.margin(a) - window.margin(b)).slice(0, 3);
+  const lowMarginThreshold = ctx.settings?.lowMarginAlert ?? 30;
+  const lowMargin = products
+    .filter(p => window.margin(p) < lowMarginThreshold)
+    .sort((a,b) => window.margin(a) - window.margin(b))
+    .slice(0, 5);
 
   return (
     <div onScroll={(e) => setScrolled(e.target.scrollTop > 4)} style={{
@@ -984,8 +988,9 @@ function ReportsScreen({ ctx }) {
       {/* Despesas + Lucro líquido */}
       <ExpensesSection ctx={ctx} period={period} grossProfit={filtered.reduce((s,v) => s+v.profit, 0)}/>
 
-      {/* Low margin alert */}
-      <window.SectionHead title="Atenção: margem baixa"/>
+      {/* Low margin alert — only shows if there are products below the threshold */}
+      {lowMargin.length > 0 && (<>
+      <window.SectionHead title={`Atenção: margem abaixo de ${lowMarginThreshold}%`}/>
       <div style={{ padding: '0 20px 130px' }}>
         <window.Card padded={false} style={{ background: T.amberSoft, border: '1px solid #EFDDA8' }}>
           {lowMargin.map((p, idx) => (
@@ -1007,6 +1012,7 @@ function ReportsScreen({ ctx }) {
           ))}
         </window.Card>
       </div>
+      </>)}
     </div>
   );
 }
