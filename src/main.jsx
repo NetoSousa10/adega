@@ -13,43 +13,66 @@ import {
   clearState, EMPTY_STATE,
 } from './storage.js';
 
-// Intercept the Android/browser back button so it closes the topmost modal
-// instead of leaving the PWA. Each modal pushes its own history entry on open;
-// closing via X programmatically pops it.
+// Back-button handling: a single global popstate listener routes each event
+// to the top of a stack of close handlers. Each useBackClose pushes onto the
+// stack when its modal opens, pops on close. Only the topmost handler reacts
+// to a given back press, so nested modals close in the right order.
 //
-// A module-level counter suppresses popstate events triggered by our own
-// programmatic history.back() calls (e.g. when transitioning between sibling
-// modals controlled by the same state). This prevents the cleanup of one
-// hook from accidentally closing the modal that just opened.
+// A suppression counter ignores popstate events triggered by our own
+// programmatic history.back() calls (when modals close via X instead of back).
+const __backStack = [];
 let __suppressNextPopstate = 0;
+let __globalListenerInstalled = false;
+
+function installGlobalBackListener() {
+  if (__globalListenerInstalled) return;
+  __globalListenerInstalled = true;
+  window.addEventListener('popstate', () => {
+    if (__suppressNextPopstate > 0) {
+      __suppressNextPopstate--;
+      return;
+    }
+    const top = __backStack[__backStack.length - 1];
+    if (top) top();
+  });
+}
+
+function pushBackCloseHandler(handler) {
+  installGlobalBackListener();
+  __backStack.push(handler);
+  return () => {
+    const idx = __backStack.lastIndexOf(handler);
+    if (idx >= 0) __backStack.splice(idx, 1);
+  };
+}
+
+window.__adegaPushBackCloseHandler = pushBackCloseHandler;
+window.__adegaSuppressNextPopstate = () => { __suppressNextPopstate++; };
+window.__adegaReleaseSuppressedPopstateSoon = () => {
+  setTimeout(() => {
+    if (__suppressNextPopstate > 0) __suppressNextPopstate--;
+  }, 50);
+};
+
 function useBackClose(isOpen, close) {
   const closeRef = React.useRef(close);
   closeRef.current = close;
 
   React.useEffect(() => {
     if (!isOpen) return;
+
     let viaBack = false;
     window.history.pushState({ __adegaModal: true }, '');
-    const onPop = () => {
-      if (__suppressNextPopstate > 0) {
-        __suppressNextPopstate--;
-        return;
-      }
-      viaBack = true;
-      closeRef.current();
-    };
-    window.addEventListener('popstate', onPop);
+    const handler = () => { viaBack = true; closeRef.current(); };
+    const removeBackHandler = pushBackCloseHandler(handler);
+
     return () => {
-      window.removeEventListener('popstate', onPop);
+      removeBackHandler();
       if (!viaBack && window.history.state?.__adegaModal) {
-        __suppressNextPopstate++;
+        window.__adegaSuppressNextPopstate();
         try { window.history.back(); } catch (_) { /* noop */ }
-        // Safety: if no listener consumed the suppression, decrement after
-        // the popstate macrotask runs so a stale count doesn't eat a real
-        // user back press later.
-        setTimeout(() => {
-          if (__suppressNextPopstate > 0) __suppressNextPopstate--;
-        }, 50);
+        // Safety reset if no listener consumes the suppression flag.
+        window.__adegaReleaseSuppressedPopstateSoon();
       }
     };
   }, [isOpen]);

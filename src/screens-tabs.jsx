@@ -1060,7 +1060,7 @@ function ExpensesSection({ ctx, period, grossProfit }) {
   return (
     <>
       <window.SectionHead
-        title="Despesas e lucro líquido"
+        title="Despesas"
         action={{ label: '+ Adicionar', onClick: handleAdd }}/>
       <div style={{ padding: '0 20px' }}>
         <window.Card style={{ padding: 14 }}>

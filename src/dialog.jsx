@@ -25,16 +25,18 @@ export function DialogHost() {
     if (!d) return;
     let viaBack = false;
     window.history.pushState({ __adegaDialog: true }, '');
-    const onPop = () => {
+    const onBack = () => {
       viaBack = true;
       d.resolve(d.type === 'confirm' ? false : null);
       setD(null); setValue('');
     };
-    window.addEventListener('popstate', onPop);
+    const removeBackHandler = window.__adegaPushBackCloseHandler?.(onBack);
     return () => {
-      window.removeEventListener('popstate', onPop);
+      removeBackHandler?.();
       if (!viaBack && window.history.state?.__adegaDialog) {
+        window.__adegaSuppressNextPopstate?.();
         try { window.history.back(); } catch (_) { /* noop */ }
+        window.__adegaReleaseSuppressedPopstateSoon?.();
       }
     };
   }, [d]);
