@@ -111,7 +111,7 @@ function App({ initialState }) {
   useBackClose(editingProduct !== undefined, () => setEditingProduct(undefined));
   useBackClose(checkoutOpen, () => setCheckoutOpen(false));
   useBackClose(openPageId === 'categories', () => setOpenPageId('settings'));
-  useBackClose(openPageId === 'settings', () => setOpenPageId(null));
+  useBackClose(openPageId === 'settings' || openPageId === 'categories', () => setOpenPageId(null));
   useBackClose(!!detailSale, () => setDetailSale(null));
   useBackClose(!!successSale, () => setSuccessSale(null));
   useBackClose(cashCloseOpen, () => setCashCloseOpen(false));
@@ -417,7 +417,7 @@ function App({ initialState }) {
           onCancelLine={(idx) => cancelSaleLine(detailSale.id, idx)}
           onClose={() => setDetailSale(null)}/>
       )}
-      {openPageId === 'settings' && (
+      {(openPageId === 'settings' || openPageId === 'categories') && (
         <window.SettingsScreen ctx={ctx} onClose={() => setOpenPageId(null)}/>
       )}
       {openPageId === 'categories' && (
