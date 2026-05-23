@@ -55,11 +55,11 @@ function App({ initialState }) {
   const [detailSale, setDetailSale] = React.useState(null);
   const [successSale, setSuccessSale] = React.useState(null);
 
-  // Hook back-button into every modal/sheet so it closes instead of exiting PWA.
+  // Hook back-button into modals/sheets so it closes instead of exiting PWA.
+  // Settings/Categories share openPageId — nesting them with useBackClose causes
+  // history thrashing on transition, so they rely on the ← header button instead.
   useBackClose(editingProduct !== undefined, () => setEditingProduct(undefined));
   useBackClose(checkoutOpen, () => setCheckoutOpen(false));
-  useBackClose(openPageId === 'categories', () => setOpenPageId('settings'));
-  useBackClose(openPageId === 'settings', () => setOpenPageId(null));
   useBackClose(!!detailSale, () => setDetailSale(null));
   useBackClose(!!successSale, () => setSuccessSale(null));
   useBackClose(cashCloseOpen, () => setCashCloseOpen(false));
