@@ -8,7 +8,7 @@ const SCHEMA_VERSION = 1;
 export const DEFAULT_SETTINGS = {
   storeName: 'Adega Pinguim',
   ownerName: '',
-  backupReminderDays: 3,
+  backupReminderDays: 7,
   lastBackupAt: null,
   lowStockAlert: 6,
   lowMarginAlert: 30,
